@@ -16,9 +16,14 @@ dt1=CSV.read("./geumriver_summer.csv", DataFrame)
 x3 = (dt1[:, Not(["TIME","Z","DEP","I","J","U","V","W","X","Y"])])
 y3 = select(dt1,"L","K","U","V","W")
 
-MultitargetLinearRegressor = @load MultitargetLinearRegressor pkg=MultivariateStats
+MultitargetKNNRegressor = @load MultitargetKNNRegressor pkg=NearestNeighborModels
 
-model = MultitargetLinearRegressor()
+model = MultitargetKNNRegressor(K = 5, 
+        algorithm = :kdtree, 
+        leafsize = 10, 
+        reorder = true, 
+        weights = NearestNeighborModels.Uniform())
+  
 for i=2:LA
         x = x3[(x3[:,1] .== i), :]
         x = x[:,2:4]
@@ -26,5 +31,5 @@ for i=2:LA
         yu = y[:,3:5]
         mach = machine(model, x, yu)
         MLJ.fit!(mach)
-        MLJ.save( "./lin/m"*string(i)*".jls", mach)
+        MLJ.save( "./knn/m"*string(i)*".jls", mach)
 end
